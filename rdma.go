@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 
 	"golang.org/x/net/context"
-	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1alpha"
+	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
 
 	"github.com/hustcat/k8s-rdma-device-plugin/ibverbs"
 )
@@ -16,13 +16,13 @@ const NetDeviceRource = "/sys/class/net/%s/device/resource"
 
 func GetDevices(masterNetDevice string) ([]Device, error) {
 	if masterNetDevice == "" {
-		return getAllRdmaDeivces()
+		return getAllRdmaDevices()
 	} else {
-		return getRdmaDeivces(masterNetDevice)
+		return getRdmaDevices(masterNetDevice)
 	}
 }
 
-func getAllRdmaDeivces() ([]Device, error) {
+func getAllRdmaDevices() ([]Device, error) {
 	var devs []Device
 	// Get all RDMA device list
 	ibvDevList, err := ibverbs.IbvGetDeviceList()
@@ -35,14 +35,14 @@ func getAllRdmaDeivces() ([]Device, error) {
 		return nil, err
 	}
 	for _, d := range ibvDevList {
+		dResource, err := getRdmaDeviceResoure(d.Name)
+		if err != nil {
+			return nil, err
+		}
 		for _, n := range netDevList {
-			dResource, err := getRdmaDeviceResoure(d.Name)
-			if err != nil {
-				return nil, err
-			}
 			nResource, err := getNetDeviceResoure(n)
 			if err != nil {
-				return nil, err
+				continue
 			}
 
 			// the same device
@@ -57,7 +57,7 @@ func getAllRdmaDeivces() ([]Device, error) {
 	return devs, nil
 }
 
-func getRdmaDeivces(masterNetDevice string) ([]Device, error) {
+func getRdmaDevices(masterNetDevice string) ([]Device, error) {
 	var devs []Device
 	// Get all RDMA device list
 	ibvDevList, err := ibverbs.IbvGetDeviceList()
@@ -71,14 +71,14 @@ func getRdmaDeivces(masterNetDevice string) ([]Device, error) {
 	}
 
 	for _, d := range ibvDevList {
+		dResource, err := getRdmaDeviceResoure(d.Name)
+		if err != nil {
+			return nil, err
+		}
 		for _, n := range netDevList {
-			dResource, err := getRdmaDeviceResoure(d.Name)
-			if err != nil {
-				return nil, err
-			}
 			nResource, err := getNetDeviceResoure(n)
 			if err != nil {
-				return nil, err
+				continue
 			}
 
 			// the same device

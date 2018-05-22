@@ -7,6 +7,6 @@ import:
   - context
 - package: google.golang.org/grpc
 - package: k8s.io/kubernetes
-  version: v1.9.3
+  version: v1.10.2
   subpackages:
-  - pkg/kubelet/apis/deviceplugin/v1alpha
+  - pkg/kubelet/apis/deviceplugin/v1beta1
